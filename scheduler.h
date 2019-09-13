@@ -16,7 +16,7 @@ public:
 
     }
 
-    __device__ virtual void schedule() {}
+    __device__ virtual void schedule(int time, std::list<Processor *> processors, std::list<job *> jobs) {}
     __device__ virtual void run() {}
 
 };
@@ -28,7 +28,7 @@ public:
     {
 
     }
-    __device__ void schedule();
+    __device__ void schedule(int time, std::list<Processor *> processors, std::list<job *> jobs);
     __device__ void run();
 
 private:
