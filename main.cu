@@ -5,7 +5,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <math.h>
-#include <list>
+#include "list.cu"
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
 
@@ -25,10 +25,12 @@ enum PER_TASK_UTILIZATION { light , medium , heavy, mixed};
 #define TOTAL_UTILIZATION  0.1
 #define MAX_PERIOD 200
 #define MIN_PERIOD 50
+#define DURATION 1000
+#define OVERHEAD 0
 
-#define SCHEDULER FIFO
+enum SCHEDULER {FIFO , EDF, ROLE_BASED};
 
-
+SCHEDULER _SCHEDULER = FIFO;
 
 #define THREADS_PER_BLOCK 48
 #define BLOCKS_PER_GRID ((NUMBER+THREADS_PER_BLOCK-1)/THREADS_PER_BLOCK)
@@ -36,8 +38,10 @@ enum PER_TASK_UTILIZATION { light , medium , heavy, mixed};
 std::list<task *> _tasks;
 std::list<Processor *> _processors;
 
-thrust::device_vector<Processor *> gd_processors;
-thrust::device_vector<task *> gd_tasks;
+__device__ Processor** gd_processors;
+__device__ task** gd_tasks;
+
+__device__ int number_of_tasks = 0;
 
 __device__ int _duration;
 __device__ bool _preemptive;
@@ -50,9 +54,10 @@ __device__ sched::Scheduler *_scheduler;
 __device__ double total_utilization()
 {
     double sum=0;
-    for ( task tsk : gd_tasks)
+    for(int i=0; i< number_of_tasks; i++)
     {
-        sum+= tsk._execution_time / tsk._period;
+        //task tsk = 
+        sum+= gd_tasks[i]->_execution_time / gd_tasks[i]->_period;
     }
     return sum;
 }
@@ -64,40 +69,79 @@ __device__ void deadline_missed_handler()
 {
     _schedulibility = false;
 }
-__device__ std::list<job *> _release()
+__device__ List<job *> _release()
 {
-    std::list<job *> jobs;
-    for (task tsk : _tasks)
+   List<job *> jobs;
+    for (int i=0; i< number_of_tasks; i++)
     {
-        if(((_cycle - tsk._phase)%tsk._period ==0) || (_cycle == tsk._phase))
+        if(((_cycle - gd_tasks[i]->_phase)%gd_tasks[i]->_period ==0) || (_cycle == gd_tasks[i]->_phase))
         {
-            job *tmp_job = new job(tsk);
-            jobs.push_back(tmp_job);
+            job *tmp_job = new job(gd_tasks[i]);
+            jobs.push(tmp_job);
             tmp_job->release(_cycle);
         }
     }
     return jobs;
 }
 
-__global__ void kernel_run( thrust::device_vector<Processor *> d_processors, thrust::device_vector<task *> d_tasks)
+
+
+__device__ int gcd(int a, int b) 
+{ 
+    if (b == 0) 
+        return a; 
+    return gcd(b, a % b); 
+} 
+  
+// Returns LCM of array elements 
+__device__ int findlcm(task** arr[], int n) 
+{ 
+    // Initialize result 
+    int ans = arr[0]->_period; 
+  
+    // ans contains LCM of arr[0], ..arr[i] 
+    // after i'th iteration, 
+    for (int i = 1; i < n; i++) 
+        ans = (((arr[i]->_period * ans)) / 
+                (gcd(arr[i]->_period, ans))); 
+  
+    return ans; 
+} 
+
+
+
+
+__device__ int hyperperiod()
 {
+    return findlcm(gd_tasks, number_of_tasks);
+}
+
+
+
+
+
+__global__ void kernel_run( Processor** d_processors, task** d_tasks, int no_tasks)
+{
+    number_of_tasks = no_tasks;
+    _duration = hyperperiod();
+    _cycle = 0;
    while(_cycle < _duration)
     {
-        std::list<job *> released_jobs = _release();
-        _scheduler->schedule(_cycle, _processors, released_jobs);
+        List<job *> released_jobs = _release();
+        _scheduler->schedule(_cycle, gd_processors, released_jobs);
 
-        for (Processor *p: _processors)
+        for (int i=0; i<PROCESSOR_NUMBER; i++)
         {
-            p->run(_cycle);
+            gd_processors[i]->run(_cycle);
         }
 
         tick();
 
     }
 
-    for (Processor *p: _processors)
+    for (int i=0; i<PROCESSOR_NUMBER; i++)
     {
-        p->stop();
+        gd_processors[i]->stop();
     }
 
 }
@@ -147,7 +191,7 @@ int main() {
         _processors.push_back(p);
     }
 
-    switch (SCHEDULER)
+    switch (_SCHEDULER)
     {
     case FIFO:
         cudaMalloc((void**)&_scheduler, sizeof(sched::FIFO));
@@ -159,10 +203,11 @@ int main() {
 
     thrust::device_vector<Processor *> d_processors(_processors.begin(), _processors.end());
     thrust::device_vector<task *> d_tasks(_tasks.begin(), _tasks.end());
-    gd_processors = d_processors;
-    gd_tasks = d_tasks;
+    gd_processors = thrust::raw_pointer_cast( &d_processors[0] );
+    gd_tasks = thrust::raw_pointer_cast( &d_tasks[0] );
 
-    kernel_run<<<THREADS_PER_BLOCK, BLOCKS_PER_GRID>>>(d_processors,d_tasks);
+
+    kernel_run<<<THREADS_PER_BLOCK, BLOCKS_PER_GRID>>>(gd_processors,gd_tasks, _tasks.size());
 
 
     cout << "Hello" << endl;

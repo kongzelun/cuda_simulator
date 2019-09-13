@@ -21,29 +21,34 @@ struct task {
     int _execution_time;
 };
 
+
+class Taskset {
+    
+}
+
 class job
 {
 public:
-    job(task tsk)
+    __device__ __host__ job(task* tsk)
     {
         _task = tsk; // TODO: check if copy works
         _executed_cycle = 0;
         _state = Created;
     }
 
-    void release(int time);
-    void activate();
+    __device__ __host__ void release(int time);
+    __device__ __host__ void activate();
     __device__ __host__ int get_deadline();
     __device__ __host__ int get_remain();
     __device__ __host__ bool completed();
     __device__ __host__ bool missed();
-    void preempt(); 
+    __device__ __host__ void preempt(); 
     __device__ __host__ void terminate(int time);
     __device__ void run();
     STATE get_state();
 
 private:
-    task _task;
+    task* _task;
     int _executed_cycle;
     int _release_time;
     int _response_time;

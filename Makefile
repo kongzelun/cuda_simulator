@@ -4,7 +4,7 @@ CPPFLAGS=-std=c++11
 LDFLAGS=
 RM=rm -f
 
-SRCS=main.cu resources.cu system.cu scheduler.cu
+SRCS=main.cu myqueue.cu resources.cu system.cu scheduler.cu
 OBJS=$(subst .cu,.o,$(SRCS))
 
 all: simulator
@@ -13,7 +13,7 @@ simulator: $(OBJS)
 	$(NCXX) $(LDFLAGS) -o simulator $(OBJS)
 
 
-%.o: %.c
+%.o: %.cpp
 	$(CXX)	$(CPPFLAGS)	-o	$@	-c	$<
 
 %.o: %.cu

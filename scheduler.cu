@@ -1,6 +1,6 @@
 #include "scheduler.h"
 
-__device__ void FIFO::schedule(int time, std::list<Processor *> processors, std::list<job *> jobs)
+__device__ void FIFO::schedule(int time, Processor ** processors, MyQueue<job*> jobs)
 {
     for (std::list<job*>::iterator it=jobs.begin(); it !=jobs.end(); ++it)
     {

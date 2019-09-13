@@ -4,6 +4,8 @@
 #include <queue>
 #include <list>
 #include "system.h"
+#include "myqueue.h"
+#include "list.cu"
 
 
 namespace sched
@@ -16,7 +18,7 @@ public:
 
     }
 
-    __device__ virtual void schedule(int time, std::list<Processor *> processors, std::list<job *> jobs) {}
+    __device__ virtual void schedule(int time, Processor ** processors, List<job*> jobs) {}
     __device__ virtual void run() {}
 
 };
@@ -28,11 +30,11 @@ public:
     {
 
     }
-    __device__ void schedule(int time, std::list<Processor *> processors, std::list<job *> jobs);
+    __device__ void schedule(int time, Processor ** processors, List<job*> jobs);
     __device__ void run();
 
 private:
-    std::queue<job*> _queue;
+    Queue<job *> _queue;
 
 };
 }

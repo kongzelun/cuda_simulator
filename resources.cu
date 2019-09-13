@@ -5,12 +5,12 @@ __device__ __host__ bool Processor::is_idle()
     return !(jb != NULL);
 }
 
-int Processor::overhead()
+__device__ __host__ int Processor::overhead()
 {
     return _overhead_cycle;
 }
 
-void Processor::load(job *_job)
+__device__ __host__ void Processor::load(job *_job)
 {
     assert(is_idle());
 
@@ -19,7 +19,7 @@ void Processor::load(job *_job)
     jb->activate();
 }
 
-job* Processor::preempt(job *_job)
+__device__ __host__ job* Processor::preempt(job *_job)
 {
     assert(!is_idle());
 

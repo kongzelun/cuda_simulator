@@ -28,7 +28,7 @@ protected:
 class Processor : _Resource
 {
 public:
-    Processor(std::string name, int ratio, int overhead): _Resource(name, ratio)
+    __device__ __host__ Processor(std::string name, int ratio, int overhead): _Resource(name, ratio)
     {
         _usage = 0;
         _overhead_cycle = overhead;
@@ -36,12 +36,12 @@ public:
     }
 
     __device__ __host__ bool is_idle();
-    int overhead();
-    void load(job *_job);
-    job* preempt(job *_job);
+    __device__ __host__ int overhead();
+    __device__ __host__ void load(job *_job);
+    __device__ __host__ job* preempt(job *_job);
     __device__ __host__ void unload();
     __device__ void run(int ticks);
-    void stop();
+    __device__ __host__ void stop();
 
 private:
     int _usage;
