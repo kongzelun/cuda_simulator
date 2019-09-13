@@ -1,4 +1,4 @@
-#include "Queue.h"
+#include "myqueue.h"
 #include <iostream>
 using namespace std;
 
@@ -14,7 +14,7 @@ __device__ __host__ bool Queue<T>::isEmpty(){
 }
 
 template<class T>
-__device__ __host__ void Queue<T>::enqueue(T data){
+__device__ __host__ void Queue<T>::push(T data){
     Node *newOne = new Node;
     newOne->date = data;
     newOne->next = NULL;
@@ -29,12 +29,13 @@ __device__ __host__ void Queue<T>::enqueue(T data){
 }
 
 template<class T>
-__device__ __host__ void Queue<T>::dequeue(){
+__device__ __host__ T Queue<T>::pop(){
     if(isEmpty()){
         cout << "Nothing inside" << endl;
     }
         else{
             Node *temp = frontPtr;
+            T tr = temp->data;
             if(frontPtr == backPtr){
                 frontPtr = NULL;
                 backPtr = NULL;
@@ -44,5 +45,6 @@ __device__ __host__ void Queue<T>::dequeue(){
             }
             delete temp;
             count--;
+            return tr;
         }
 }

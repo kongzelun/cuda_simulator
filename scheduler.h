@@ -5,6 +5,7 @@
 #include <list>
 #include "system.h"
 #include "myqueue.h"
+#include "resources.h"
 #include "list.cu"
 
 
@@ -18,7 +19,7 @@ public:
 
     }
 
-    __device__ virtual void schedule(int time, Processor ** processors, List<job*> jobs) {}
+    __device__ virtual void schedule(int time, Processor ** processors, List<job*> jobs, int no_of_processors) {}
     __device__ virtual void run() {}
 
 };
@@ -30,7 +31,7 @@ public:
     {
 
     }
-    __device__ void schedule(int time, Processor ** processors, List<job*> jobs);
+    __device__ void schedule(int time, Processor ** processors, List<job*> jobs, int no_of_processors);
     __device__ void run();
 
 private:

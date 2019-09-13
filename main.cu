@@ -78,7 +78,7 @@ __device__ List<job *> _release()
         {
             job *tmp_job = new job(gd_tasks[i]);
             jobs.push(tmp_job);
-            tmp_job->release(_cycle);
+            tmp_job->job_release(_cycle);
         }
     }
     return jobs;
@@ -94,7 +94,7 @@ __device__ int gcd(int a, int b)
 } 
   
 // Returns LCM of array elements 
-__device__ int findlcm(task** arr[], int n) 
+__device__ int findlcm(task** arr, int n) 
 { 
     // Initialize result 
     int ans = arr[0]->_period; 
@@ -125,10 +125,11 @@ __global__ void kernel_run( Processor** d_processors, task** d_tasks, int no_tas
     number_of_tasks = no_tasks;
     _duration = hyperperiod();
     _cycle = 0;
+    _overhead = OVERHEAD;
    while(_cycle < _duration)
     {
         List<job *> released_jobs = _release();
-        _scheduler->schedule(_cycle, gd_processors, released_jobs);
+        _scheduler->schedule(_cycle, gd_processors, released_jobs, PROCESSOR_NUMBER);
 
         for (int i=0; i<PROCESSOR_NUMBER; i++)
         {

@@ -8,8 +8,8 @@ class Queue
     public:
         Queue();
         __device__ __host__ bool isEmpty();
-        __device__ __host__ void enqueue(T data);
-        __device__ __host__ void dequeue();
+        __device__ __host__ void push(T data);
+        __device__ __host__ T pop();
      
 
     private:

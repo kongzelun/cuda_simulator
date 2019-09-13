@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <string>
 
-__device__ __host__ void job::release(int time) {
+__device__ __host__ void job::job_release(int time) {
   assert(_state == Created);
   _release_time = time;
   _state = Ready;

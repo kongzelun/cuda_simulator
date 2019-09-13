@@ -1,6 +1,6 @@
 CXX=g++
 NCXX=nvcc
-CPPFLAGS=-std=c++11 
+CPPFLAGS=-std=c++11 -dc
 LDFLAGS=
 RM=rm -f
 

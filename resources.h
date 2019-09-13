@@ -1,5 +1,5 @@
 #ifndef _RESOURCES_H_CUDA
-#define _RESOURCE_H_CUDA
+#define _RESOURCES_H_CUDA
 
 #include <string>
 #include "system.h"

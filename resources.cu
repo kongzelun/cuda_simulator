@@ -62,3 +62,8 @@ __device__ void Processor::run(int ticks)
         }
     }
 }
+
+__device__ __host__ void Processor::stop()
+{
+    // Nothing
+}

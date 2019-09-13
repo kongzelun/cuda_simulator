@@ -23,8 +23,8 @@ struct task {
 
 
 class Taskset {
-    
-}
+
+};
 
 class job
 {
@@ -36,7 +36,7 @@ public:
         _state = Created;
     }
 
-    __device__ __host__ void release(int time);
+    __device__ __host__ void job_release(int time);
     __device__ __host__ void activate();
     __device__ __host__ int get_deadline();
     __device__ __host__ int get_remain();
