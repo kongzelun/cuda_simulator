@@ -8,6 +8,7 @@
 #include "list.cu"
 #include <thrust/device_vector.h>
 #include <thrust/copy.h>
+#include "util.h"
 
 using namespace std;
 
@@ -155,13 +156,15 @@ int main() {
     double total = 0.0;
 
     int i=0;
-
+    
+    int counter = 0;
     double total_utilization = TOTAL_UTILIZATION * PROCESSOR_NUMBER;
 
+   
     while ((total_utilization - total) > (1/MAX_PERIOD))
     {
         int period = rand()%(200-50+1) + 50;
-        int util = TASK_MODE;
+        double util = TASK_MODE;
         
         if(total+util > total_utilization)
         {
@@ -170,13 +173,16 @@ int main() {
 
         int execution_time = floor(util * period);
 
+	//std::cout << util << std::endl;
         if(execution_time < 1)
         {
             execution_time = 1;
             period = ceil(execution_time/util);
+
+	    
         }
 
-        util = execution_time/period;
+        util = (double)execution_time/period;
 
         total += util;
         task *tsk = new task("task"+to_string(i++), 0 ,period, period, execution_time);
@@ -184,8 +190,15 @@ int main() {
         _tasks.push_back(tsk);
 
         //total_utilization = total;
+
+	counter++;
+	if((counter%10000) == 0)
+	{
+		std::cout << counter << std::endl;
+	}
     }
     
+    std::cout << "here" << std::endl;
     for (int i=0; i< PROCESSOR_NUMBER; i++)
     {
         Processor *p = new Processor("cpu"+to_string(i), 1, 0);
@@ -202,14 +215,31 @@ int main() {
         break;
     }
 
-    thrust::device_vector<Processor *> d_processors(_processors.begin(), _processors.end());
-    thrust::device_vector<task *> d_tasks(_tasks.begin(), _tasks.end());
-    gd_processors = thrust::raw_pointer_cast( &d_processors[0] );
-    gd_tasks = thrust::raw_pointer_cast( &d_tasks[0] );
+   // std::cout << "here" << std::endl;
+    
+    try
+    {
+	thrust::device_vector<Processor *> d_processors(_processors.begin(), _processors.end());
+        thrust::device_vector<task *> d_tasks(_tasks.begin(), _tasks.end());
+        gd_processors = thrust::raw_pointer_cast( &d_processors[0] );
+        gd_tasks = thrust::raw_pointer_cast( &d_tasks[0] );
+    }
+    catch(std::bad_alloc &e)
+    {
+        std::cout << "Ran out of memory while sorting" << std::endl;
+        exit(-1);
+    }
+    catch(thrust::system_error &e)
+    {
+	std::cout << "Error accessing vector element: " << e.what() << std::endl;
+	exit(-1);
+    }
+
 
 
     kernel_run<<<THREADS_PER_BLOCK, BLOCKS_PER_GRID>>>(gd_processors,gd_tasks, _tasks.size());
-
+    gpuErrchk( cudaPeekAtLastError() );
+    gpuErrchk( cudaDeviceSynchronize() );
 
     cout << "Hello" << endl;
     return 0; }
