@@ -3,62 +3,97 @@
 
 template <typename T>
 struct Node {
-  T data;
-  Node *next;
+	T data;
+	Node *next;
 };
 
-template <typename T> class List{
+template <typename T> class List {
 private:
-    Node<T> *head;
-    int count =0;
+	Node<T> *head;
+	int count = 0;
 public:
-    __device__ __host__ List(){
-        head = NULL;
-    }
+	__device__ __host__ List() {
+		head = NULL;
+	}
 
-    __device__ __host__ bool isEmpty()
-    {
-        return (count == 0);
-    }
+	__device__ __host__ bool isEmpty()
+	{
+		return (count == 0);
+	}
 
-    __device__ __host__ void push(T val){
-        Node<T> *n = new Node<T>();   
-        n->data = val;             
-        n->next = head;        
-        head = n;   
-        count++;    
-    }
+	__device__ __host__ void push(T val) {
+		Node<T> *n = new Node<T>();
+		n->data = val;
+		n->next = head;
+		head = n;
+		count++;
+	}
 
-    __device__ __host__ T pop(){
-        if(isEmpty())
-        {
-            return NULL;
-        }
-        else
-        {
-      if(head) {
-        T p = head->data;
-        head = head->next;
-        count--;
-        return p;
-      }
-    }
-    }
-    
-    __device__ __host__ bool search(T val) {
-      Node<T> *temp = head;
-      while(temp->next) {
-        if(temp->data == val) return true;
-        else temp = temp->next;
-      }
-      delete temp;
-      return false;
-    }
+	__device__ __host__ T pop() {
+		if (isEmpty())
+		{
+			return NULL;
+		}
+		else
+		{
+			if (head) {
+				T p = head->data;
+				head = head->next;
+				count--;
+				return p;
+			}
+		}
+	}
 
-    __device__ __host__ int size()
-    {
-        return count;
-    }
+	__device__ __host__ bool search(T val) {
+		Node<T> *temp = head;
+		while (temp->next) {
+			if (temp->data == val) return true;
+			else temp = temp->next;
+		}
+		delete temp;
+		return false;
+	}
+
+	__device__ __host__ int size()
+	{
+		return count;
+	}
+
+	__device__ __host__	T operator[](int index) {
+		int itr = 0;
+		Node<T> *temp = head;
+		while (itr != index && temp->next)
+		{
+			temp = temp->next;
+			itr++;
+		}
+		return temp->data;
+	}
+
+	__device__ __host__	T get_index(int index)
+	{
+		int itr = 0;
+		Node<T> *temp = head;
+		while (itr != index && temp->next)
+		{
+			temp = temp->next;
+			itr++;
+		}
+		return temp->data;
+	}
+
+	/*__device__ __host__	T operator[](int & index) {
+		int itr = 0;
+		Node<T> *temp = head;
+		while (itr != index && temp->next)
+		{
+			temp = temp->next;
+			itr++;
+		}
+		return temp->data;
+	}*/
+
 };
 
 
