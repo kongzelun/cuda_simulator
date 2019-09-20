@@ -254,7 +254,7 @@ int main() {
 	gpuErrchk(cudaDeviceSynchronize());
 
 	//cout << "Hello" << endl;
-	getchar();
-	getchar();
+	//getchar();
+	//getchar();
 	return 0;
 }
